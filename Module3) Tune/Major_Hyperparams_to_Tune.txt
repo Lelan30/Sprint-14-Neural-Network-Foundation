@@ -1,0 +1,94 @@
+### Describe the Major HyperParameters to Tune ###
+
+## Hyperparameters ##
+# Batch Size #
+# Large Batch Size - Accuracy Decreased
+
+# Best to use bactch size between 2 and 32
+
+# Small Batch Size - May take longer to train but provides more weight updates
+# and might converge on a better solution
+
+# Learning Rate & Number training epochs #
+# Learning Rate - the value that controls how much to change when estimated error calculated
+# Big changes - Large Learning rate, Good solution
+# Small changes - longer training time
+# Ideal - stable solution at reasonable amount of time
+
+## Follow-Along ##
+# Imports
+from sklearn.datasets import make_classification
+from keras import models
+from keras import layers
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import GridSearchCV
+
+# Define number of features
+num_features = 50
+
+# Generate feature matrix and target vector
+# binary classification (two classes)
+
+features, target = make_classification(n_samples=10000,
+                                       n_features=num_features,
+                                       n_informative=3,
+                                       n_redundant=0,
+                                       n_classes=2,
+                                       weights=[.5, .5],
+                                       random_state=42)
+
+# Verify size of feature and target
+print("Feature array shape: ", features.shape)
+print("Target array shape: ", len(target))
+
+#Import keras and layers
+
+# Function to return a compile network
+def make_network(optimizer='adam'):
+
+    # Instantiate
+    network = models.Sequential()
+
+    # Add input layer (shape= number features)
+    network.add(layers.Dense(units=8, activation='relu', input_shape=(num_features,)))
+
+    # Add hidden layers with 8 neurons
+    network.add(layers.Dense(units=8, activation='relu'))
+
+    # Add output layer sigmoid activation function
+    network.add(layers.Dense(units=1, activation='sigmoid'))
+
+    # Compile
+    network.compile(loss='binary_crossentropy',
+                    optimizer=optimizer,
+                    metrics=['accuracy'])
+
+    # Return network
+    return network
+
+# scikitlearn wrappers for keras
+# import from keras.wrappers.scikit_learn import KerasClassifier
+
+
+neural_network = KerasClassifier(build_fn=make_network, verbose=0)
+
+# Define hyperparams space over which to search
+epochs = [10, 25]
+batches = [4, 8, 32]
+optimizers = ['rmsprop', 'adam']
+
+# Make a dictionary of params
+hyperparameters = dict(optimizer=optimizers, epochs=epochs, batch_size=batches)
+
+# Create and fit the grid search
+# import from sklearn.model_selection import GridSearchCV
+grid = GridSearchCV(estimator=neural_network, cv=5, param_grid=hyperparameters)
+grid_result = grid.fit(features, target)
+
+# Best params
+grid_result.best_params_
+
+'''
+outcome:
+{'batch_size': 4, 'epochs': 25, 'optimizer': 'adam'}
+'''

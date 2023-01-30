@@ -1,0 +1,100 @@
+### Export Keras Model and Load into Lightweight Web App ##
+
+## Follow-Along ##
+# Imports
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+tensorflow.keras.callbacks import ModelCheckpoint
+import numpy as np
+
+# Define keras model
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Compile
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Above: Defines architecture (input layer, two hidden layers, output, activations)
+
+# Add callback and save checkpoints
+
+# Create checkpoint options
+cpoint = ModelCheckpoint("weights_best.h5",
+                          verbose=1, save_weights_only=True)
+
+# Load Dataset with callback
+# import numpy as np
+
+# Set url
+url = 'https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv'
+
+# Load dataset
+dataset = np.loadtxt(url, delimiter=',')
+
+# Split into input output
+X = dataset[:, 0:8]
+y = dataset[:, 8]
+
+# Fit keras model on dataset
+# Remove verbose
+model.fit(X, y, epochs=5, batch_size=10, verbose=0, callbacks=[cpoint]);
+
+'''
+output:
+Epoch 00001: saving model to weights_best.h5
+
+Epoch 00002: saving model to weights_best.h5
+
+Epoch 00003: saving model to weights_best.h5
+
+Epoch 00004: saving model to weights_best.h5
+
+'''
+
+# Look at saved model weights and architect
+# View saved model weights
+model.load_weights('weights_best.h5')
+model.summary()
+
+'''
+output:
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+dense (Dense)                (None, 12)                108       
+_________________________________________________________________
+dense_1 (Dense)              (None, 8)                 104       
+_________________________________________________________________
+dense_2 (Dense)              (None, 1)                 9         
+=================================================================
+Total params: 221
+Trainable params: 221
+Non-trainable params: 0
+'''
+
+'''
+Extra: 
+1) Why does the Perceptron (model1) only achieve about 50% accuracy?
+
+A simple perceptron can only learn a linear decision boundary as seen 
+in the visualization above. Since the data points are distributed in a 
+way where only a single class is represented per quadrant, a linear decision 
+boundary can never reach an accuracy much higher than about 50% since each 
+class will be equally represented on either side of that linear decision 
+boundary.
+
+2) What is the architectural property of the Multi-Layer Perceptron that 
+allows it to more accurately learn the relationship between X and Y?
+
+The additional layers and neurons allow a neural networks to learn non-linear
+ relationships between X and Y. Each layer in a neural net represents an 
+N-dimensional vector space. So by passing data from one layer to another, 
+we are passing a data vector from one vector space to another, each with a 
+different dimensions, often times this will change the geometry of the data 
+points (i.e. their distribution in space) in such a way where a linear 
+separation then becomes possible. This is the same idea behind the 
+Kernel Trick in Support Vector Machines (SVM).
+'''

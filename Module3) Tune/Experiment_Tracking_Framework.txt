@@ -1,0 +1,127 @@
+### Implement an Experiment Tracking Framework ###
+
+## Follow-Along ##
+# Imports
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_classification
+import tensorflow as tf
+from tensorboard.plugins.hparams import api as hp
+
+# Define number of features
+num_features= 50
+
+# Generate feature matrix and target vector
+features, target = make_classification(n_samples = 10000,
+                                       n_features = num_features,
+                                       n_informative = 3,
+                                       n_redundant = 0,
+                                       n_classes = 2,
+                                       random_state = 42)
+
+x_train, x_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
+
+# Set up parameters to tune over
+'''
+Number of units
+Dropout Rate in dropout layer
+Optimizer
+'''
+# Import import tensorflow as tf
+
+# Specify parameters and values
+HP_NUM_UNITS = hp.HParams('num_units', hp.Discrete([8, 16]))
+HP_DROPOUT = hp.HParams('dropout', hp.RealInterval(0.1, 0.2))
+HP_OPTIMIZER = hp.HParam('optimizer', hp.Discrete(['adam, sgd']))
+
+# Evaluate model accuracy
+METRIC_ACCURACY = 'accuracy'
+
+# Write function create logs
+with tf.summary.create_file_writer('logs/hparam_tuning').as_default():
+    hp.hparams_config(
+        hparams=[HP_NUM_UNITS, HP_DROPOUT, HP_OPTIMIZER],
+        metrics= [hp.Metrics(METRIC_ACCURACY, display_name='Accuracy')],
+    )
+
+# Write function to create model with specific hyperparams
+def train_test_model(hparams):
+    model = tf.keras.model.Sequential([
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(hparams[HP_NUM_UNITS], activation=tf.nn.relu),
+        tf.keras.layers.Dropout(hparams[HP_DROPOUT]),
+        tf.keras.layers.Dense(10, activation=tf.nn.softmax),
+    ])
+
+    model.compile(
+        optimizer=hparams[HP_OPTIMIZER],
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+# Run with 1 epoch
+    model.fit(x_train, y_train, epochs=1)
+    _, accuracy = model.evaluate(x_test, y_test)
+    return accuracy
+
+# Log hparams summary with hyperparameters and final acc
+def run(run_dir, hparams):
+    with tf.summary.create_file_writter(run_dir).as_default():
+        hp.hparams(hparams)
+        accuracy = train_test_model(hparams)
+        tf.summary.scalar(METRIC_ACCURACY, accuracy, step=1)
+
+    # Start run and log all under one parent dir
+session_num = 0
+
+for num_units in HP_NUM_UNITS.domain.values:
+    for dropout_rate in (HP_DROPOUT.domain.min_value, HP_DROPOUT.domain.max_value):
+        for optimizer in HP_OPTIMIZER.domain.values:
+            hparams = {
+                HP_NUM_UNITS: num_units,
+                HP_DROPOUT: dropout_rate,
+                HP_OPTIMIZER: optimizer,
+            }
+            run_name = "run-%d" % session_num
+            print('--- Starting trial: %s' % run_name)
+            print({h.name: hparams[h] for h in hparams})
+            run('logs/hparam_tuning/' + run_name, hparams)
+            session_num += 1
+
+'''
+outcome:
+--- Starting trial: run-0
+{'num_units': 8, 'dropout': 0.1, 'optimizer': 'adam'}
+235/235 [==============================] - 0s 1ms/step - loss: 1.5343 - accuracy: 0.4699
+79/79 [==============================] - 0s 1ms/step - loss: 0.9589 - accuracy: 0.6872
+--- Starting trial: run-1
+{'num_units': 8, 'dropout': 0.1, 'optimizer': 'sgd'}
+235/235 [==============================] - 0s 965us/step - loss: 1.2449 - accuracy: 0.6344
+79/79 [==============================] - 0s 935us/step - loss: 0.7668 - accuracy: 0.7572
+--- Starting trial: run-2
+{'num_units': 8, 'dropout': 0.2, 'optimizer': 'adam'}
+235/235 [==============================] - 0s 1ms/step - loss: 1.7891 - accuracy: 0.4013
+79/79 [==============================] - 0s 930us/step - loss: 1.0534 - accuracy: 0.6940
+--- Starting trial: run-3
+{'num_units': 8, 'dropout': 0.2, 'optimizer': 'sgd'}
+235/235 [==============================] - 0s 955us/step - loss: 1.7103 - accuracy: 0.4639
+79/79 [==============================] - 0s 893us/step - loss: 0.9107 - accuracy: 0.7308
+--- Starting trial: run-4
+{'num_units': 16, 'dropout': 0.1, 'optimizer': 'adam'}
+235/235 [==============================] - 0s 1ms/step - loss: 1.3951 - accuracy: 0.5427
+79/79 [==============================] - 0s 856us/step - loss: 0.6602 - accuracy: 0.7736
+--- Starting trial: run-5
+{'num_units': 16, 'dropout': 0.1, 'optimizer': 'sgd'}
+235/235 [==============================] - 0s 919us/step - loss: 1.2759 - accuracy: 0.5636
+79/79 [==============================] - 0s 908us/step - loss: 0.7052 - accuracy: 0.7420
+--- Starting trial: run-6
+{'num_units': 16, 'dropout': 0.2, 'optimizer': 'adam'}
+235/235 [==============================] - 0s 1ms/step - loss: 1.4608 - accuracy: 0.4924
+79/79 [==============================] - 0s 941us/step - loss: 0.6982 - accuracy: 0.7476
+--- Starting trial: run-7
+{'num_units': 16, 'dropout': 0.2, 'optimizer': 'sgd'}
+235/235 [==============================] - 0s 1ms/step - loss: 1.3706 - accuracy: 0.5804
+79/79 [==============================] - 0s 854us/step - loss: 0.7156 - accuracy: 0.7624
+'''
+
+# Visualize results in tensorBoard's HParams plugin
+%tensorboard -- logdir logs/hparam_tuning

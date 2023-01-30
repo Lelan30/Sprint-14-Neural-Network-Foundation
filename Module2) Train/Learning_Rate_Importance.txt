@@ -1,0 +1,121 @@
+### Importance of Leaning Rate ###
+
+## Follow-Along ##
+# Different Learning rates on how they effect accuracy
+
+# Imports
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.optimizers import SGD
+
+# Set url of Dataset
+url = 'https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv'
+
+# Load Dataset
+dataset = np.loadtxt(url, delimiter=',')
+
+# Size of dataset
+print("There are {} samples in this dataset".format(len(dataset)))
+
+# Split training test sets (X and y)
+X = dataset[:, 0:8]
+y = dataset[:, 8]
+
+# sklearn
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+# Import Keras
+'''
+outcome:
+There are 768 samples in this dataset
+'''
+
+# Define Layers
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Compile
+# from keras.optimizers import SGD
+opt = SGD(lr=0.0001)
+model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+# fit model
+lr_low = model.fit(X_train, y_train, epochs=50, batch_size=10, verbose=0,
+                   validation_data=(X_test, y_test))
+
+# Evaluate model
+print('Model Accuracy for learning rate = 0.0001:', model.evaluate(X, y)[1]*100)
+
+'''
+outcome:
+24/24 [==============================] - 0s 1ms/step - loss: 0.7017 - accuracy: 0.6406
+Model accuracy for learning rate = 0.0001: 64.0625
+'''
+
+# Release global memory state
+tf.keras.backend.clear_session()
+
+# Define Layers
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Compile model
+opt = SGD(lr=0.75)
+model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+# Fit model with different batch sizes
+lr_high = model.fit(X_train, y_train, epochs=50, batch_size=10, verbose=0,
+                       validation_data=(X_test, y_test))
+# Evaluate
+print('Model accuracy for learning rate = 0.75:', model.evaluate(X,y)[1]*100)
+
+'''
+outcome:
+24/24 [==============================] - 0s 2ms/step - loss: 0.6580 - accuracy: 0.6510
+Model accuracy for learning rate = 0.75: 65.10416865348816
+'''
+
+# Two models have been trained:
+# one with high learning rate one with low learning rate
+# Saved both models and use history methos to look at loss acc
+# for each epoch
+
+# Plot data
+# Import matplotlib
+
+# Create empty list to append to dataframe
+learn_rates = []
+
+# Loop through history of each model and create DF
+for model, result in zip([lr_low, lr_high], ["0.0001_","0.75_"]):
+
+    df = pd.DataFrame.from_dict(model.history)
+    df['epoch'] = df.index.values
+    df['Learning rate'] = result
+
+    learn_rates.append(df)
+
+# Combine all DF
+df = pd.concat(learn_rates)
+df['Learning rate'] = df['Learning rate'].astype('str')
+df.head()
+
+# Create plot
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 16))
+sns.lineplot(x='epoch', y='val_loss', hue='Learning rate', data=df, ax=ax1)
+sns.lineplot(x='epoch', y='val_accuracy', hue='Learning rate', data=df, ax=ax2);
+
+fig.clf()
+
+

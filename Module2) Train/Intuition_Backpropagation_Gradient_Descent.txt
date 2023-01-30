@@ -1,0 +1,111 @@
+### Explain the Intuition Behind Backpropagation and Gradient Descent ###
+
+# Recurrent Neural Network (RNN): addinf feedback from the last hidden layer to the first
+
+## Loss Function ##
+'''
+Adjust weights by comparing the model prediction with expected results,
+and adding or subtracting to those values.
+Minimize a loss function that compare the output to the target(correct answer)
+with Gradient Descent
+'''
+
+## Gradient Descent ##
+'''
+Find the minimum of the function with the process of Gradient Descent.
+Choose random location on function, find negative gradient direction,
+then repeat process to find minimum (sometimes local minimum)
+goal is Global Minimum
+'''
+
+## Follow-Along ##
+
+# y= (x - 3)^2
+# Graph function to find minimum
+
+# Imports
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Plot
+x = np.arange(-10, 15, 0.01)
+y = (x-3)**2
+
+plt.plot(x, y)
+plt.xlabel('x'); plt.ylabel('y')
+
+plt.clf
+
+'''
+outcome:
+It reaches a minimum (y=0) when x=3
+'''
+
+# Using python we will implement gradient descent function
+'''
+steps:
+1) Initialize at a value for x
+2) Calculate a "new" current x with the learning rate gradient
+3) Update the next iteration with "new" value of x
+4) iterate until max number of iterations is reached
+'''
+
+# Initialize at x=1
+cur_x = 1
+
+# Learning rate
+rate = 0.05
+
+# Initialize number of Iterations
+max_iters = 25
+
+# Initialize Iteration Counter
+iters = 0
+
+# Gradient of function
+grad = lambda x: 2*(x-3)
+
+while iters < max_iters:
+    # Set previous x as current
+    prev_x = cur_x
+
+    # Calculate the "new" current x with the gradient
+    cur_x = prev_x - (rate * grad(prev_x))
+
+    # Advance the Iteration Counter
+    iters = iters+1
+    print("Iteration {} - x value {}.".format(iters, cur_x))
+
+# Print out final result
+print("The local minimum occurs at", cur_x)
+
+'''
+outcome: ( After 25 iterations, the value starts to converge on minimum of x=3,
+           Adjust Learning rate to speed up convergence)
+Iteration 1 - x value: 1.2.
+Iteration 2 - x value: 1.38.
+Iteration 3 - x value: 1.5419999999999998.
+Iteration 4 - x value: 1.6877999999999997.
+Iteration 5 - x value: 1.8190199999999999.
+Iteration 6 - x value: 1.937118.
+Iteration 7 - x value: 2.0434061999999997.
+Iteration 8 - x value: 2.1390655799999996.
+Iteration 9 - x value: 2.2251590219999997.
+Iteration 10 - x value: 2.3026431198.
+Iteration 11 - x value: 2.37237880782.
+Iteration 12 - x value: 2.4351409270380002.
+Iteration 13 - x value: 2.4916268343342.
+Iteration 14 - x value: 2.54246415090078.
+Iteration 15 - x value: 2.5882177358107024.
+Iteration 16 - x value: 2.629395962229632.
+Iteration 17 - x value: 2.6664563660066687.
+Iteration 18 - x value: 2.6998107294060016.
+Iteration 19 - x value: 2.7298296564654017.
+Iteration 20 - x value: 2.7568466908188616.
+Iteration 21 - x value: 2.7811620217369755.
+Iteration 22 - x value: 2.8030458195632777.
+Iteration 23 - x value: 2.82274123760695.
+Iteration 24 - x value: 2.840467113846255.
+Iteration 25 - x value: 2.8564204024616293.
+The local minimum occurs at 2.8564204024616293
+'''

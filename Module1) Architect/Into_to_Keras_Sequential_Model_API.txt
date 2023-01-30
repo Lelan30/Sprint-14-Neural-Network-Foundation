@@ -1,0 +1,86 @@
+### Into Keras Sequential Model API ###
+# High level library used to build neural networks
+
+# Including models: TensoFlow, CTNK, Theono, MXNet, and PlaidML
+
+## Keras Classes ##
+# 1) sequential model: tf.keras.models.Sequential()
+# 2) model.add(layers.Dense())
+# 3) Model.compile()
+
+# Imports
+import pandas as pd
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+# Create the OR operator
+# data = { 'x1': [0,1,0,1],
+         # 'x2': [0,0,1,1],
+         # 'y': [0,1,1,1]}
+
+# df =  pd.DataFrame.from_dict(data).astype('int')
+# print(df.head())
+
+# Now use Keras to create perceptron model (one Layer: input and output)
+# Import Keras classes
+
+# Perceptron model
+# model = Sequential()
+# model.add(Dense(1,input_dim=2, activation='sigmoid'))
+# model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# model.fit(X, y, epoch=10);
+
+## Follow-Along ##
+# Imports
+import numpy as np
+
+# Set the url
+url = 'https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv'
+
+# Load data set
+dataset = np.loadtxt(url, delimiter=',')
+
+# Split into input (x, y)
+# 8 input columns 1 target
+X = dataset[:, 0:8]
+y = dataset[:, 8]
+
+# Define Layers #
+# 8 inputs = 8 neurons
+# Determine 'hidden layers'
+
+# Define keras model
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Now compile the model
+# Define loss function or error during learning process
+# set optimizer
+# Choose which metric to evaluate model with
+
+# Use binary_cross entropy loss function
+# Optimizer uses Adam algorithm
+# model accuracy as metric
+
+# Compile keras model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Now model is ready to train and fit
+# Specify model to train on. number of epochs, and batch size
+
+'''
+train with data above: store with X and y variables.
+epochs: number of loops through whole dataset (100)
+batch size: number of training examples
+'''
+
+# Evaluate model
+print('Model Accuracy: ', model.evaluate(X, y)[1]*100)
+
+'''
+output:
+24/24 [==============================] - 0s 821us/step - loss: 0.5424 - accuracy: 0.7500
+Model accuracy:  75.0
+'''

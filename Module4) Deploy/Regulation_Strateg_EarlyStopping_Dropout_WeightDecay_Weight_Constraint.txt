@@ -1,0 +1,88 @@
+### Describe and Implement Regulation Strategies Including Early Stopping, Dropout, Weight Decay, and Weight Constraint ###
+
+## Neural Network Regulation ##
+# Regulate overfitting
+# L2 Regression
+'''
+Regularization Techniques:
+Early Stopping
+Dropout
+Weight Decay
+Weight Constraint
+'''
+
+## Early Stopping ##
+# Stopping the training early to prevent overfitting
+# Find balance between learning data well enough and overfitting
+
+## Dropout ##
+# Not using randomly dropping nodes and thier output
+# Create new layer with different properties
+# Layers then learn sparse representation and more randomness
+# Generalizes better
+
+## Weight Decay ##
+# Reduce complexity of a model; add terms to loss function
+# Apply a term to weights as they update during gradient descent process
+# weights then decrease
+
+## Weight Constraints ##
+# Predefines weight limit is set
+# If set limit is passed; weights are scaled to remain below thrshold
+
+# Choose either Weight Decay or Weight Constraint
+
+## Follow-Along ##
+# Imports
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.constraints import max_norm
+from tensorflow.keras import layers
+from tensorflow.keras import layers
+from tensorflow.keras import regularizers
+
+callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+# Will stop the training data when no improvment in validation loss
+model = tf.keras.models.Sequential([tf.keras.layers.Dense(10)])
+model.compile(tf.keras.optimizers.SGD(), loss='mse')
+
+# Create some data
+X = np.arange(100).reshape(5, 20)
+
+y = np.zeros(5)
+
+# Model this data using EarlyStopping callback
+history = model.fit(X, y, epochs=10, batch_size=1, callbacks=[callback])
+'''
+output:
+Training data stopped after 3 epochs (not counting the first one)
+'''
+
+## Dropout ##
+
+tf.random.set_seed(42)
+
+# Drop 0.2 of the input(random)
+layer = tf.keras.layers.Dropout(0.2, input_shape=(2,))
+data = np.arange(10).reshape(5, 2).astype(np.float32)
+print('The input data: ', data)
+
+outputs = layer(data, training=True)
+print('The output after applying Dropout:', outputs)
+
+
+## Weight Regulation ##
+# Weight constraints example
+# import from tensorflow.keras.constraints import max_norm
+# from tensorflow.keras import layers
+
+# kernal_contraint argument is for the main weights
+model.add(layers.Dense(64, kernel_constraint=max_norm(2.))))
+
+# Import from tensorflow.keras import layers
+# from tensorflow.keras import regularizers
+
+# Add in weight decay terms
+layer = layers.Dense(
+    units=64, 
+    kernal_regularizer= regularizers.l1_l2(l1=1e-5, l2=1e-4))

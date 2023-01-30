@@ -1,0 +1,116 @@
+### Describe the Foundational Components of a Neural Network ###
+
+# Neurons (Data Science): A digital analog of biological neurons
+# (Neurons are linked or networked in a certain way to create neaural networks)
+# Neural Network: A computational model that works similarly to the human brain
+# Single Layer Perceptrons to complex
+
+## Perception ##
+# A neuron can be a single unit that accepts input data and provides output
+# The value of the output depends on the activation threshhold
+# Neuron will fire if the input is above threshold, otherwise its 0
+
+# Start with some input data and a set of weights to apply
+'''
+How neurons learn:
+First Iteration - weights are randomly selected
+Second Iteration - weights are adjusted after calculated results are compared to expected results
+(training data)
+Third Iteration - new eights are used to calculate the weighted sum, new results calculated and so on...
+'''
+
+## Follow-Along ##
+# Impliment a single layer perceptron
+'''
+Example:
+- Activation function
+- Input Data
+- Weights
+- Learning rate
+'''
+# step function where ouput is 0 if sum weighted input is less that 0 and 1 otherwise
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the activation function
+unit_step = lambda x: 0 if x < 0 else 1
+
+# Vectorize the function (array)
+unit_step_v = np.vectorize(unit_step)
+
+# Create arrays to plot
+x = np.arange(-5, 5, 0.1)
+y = unit_step_v(x)
+
+# Plot
+plt.plot(x, y)
+plt.xlabel('input'); plt.ylabel('step function output');
+
+# Uncomment to view plot
+# plt.clf
+
+'''
+Next - Define some datat to test in this case (Logoical or Operational)
+for input that includes a 1, and the output is 1; otherwise the output is 0
+possible choices ([0,0], [0,1], [1,0], [1,1]); bias term setup for 1 for all inputs
+can use bias to adjust threshold
+expected output 0
+'''
+
+# Data ('OR' gate
+# tuple format: ([x1,x2, bias], expected)
+training_data = [
+    (np.array([0,0,1]), 0),
+    (np.array([0,1,1]), 1),
+    (np.array([1,0,1]), 1),
+    (np.array([1,1,1]), 1),
+]
+
+# Now code perceptron
+# Initialize weights with random numbers between 1 and 0
+# Learning rate is 0.2
+
+# Imports
+from random import choice
+import matplotlib.pyplot as plt
+
+# Weights
+w = np.random.rand(3)
+
+# Errors
+errors = []
+
+# Learning rate (the size of 'jumps' when updating weights)
+learning_rate = 0.2
+
+# Number of iterations
+n = 50
+
+# Learning loop
+for i in range(n):
+    x, expected = choice(training_data)
+    # Neuron calculation
+    result = np.dot(w, x)
+    # Compare to expected results
+    error = expected - unit_step(result)
+    errors.append(error)
+    # Update the weights
+    w += learning_rate * error * x
+
+# Test the perceptron with "learned" weights
+for x, _ in training_data:
+    result = np.dot(x,w)
+    print("{}: {} -> {}".format(x[:2], result, unit_step(result)))
+
+# Neural Newtork Complete!
+# Learned to predict 0 when [0,0] and otherwise
+
+# Plot
+iteration = np.arange(0, n, 1)
+plt.plot(iteration, errors)
+plt.xlable('iteration'); plt.ylable('errors');
+
+plt.clf()
+
+# error stays at 0 after 20 iterations which seems reasonable for small dataset
+# and relatively small learning model

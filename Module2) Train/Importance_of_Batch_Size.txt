@@ -1,0 +1,128 @@
+### Discuss the Importance of Batch Size ###
+'''
+Batch: A given number of samples used to make prediction,
+calculate the errors, and update the weights.
+During one epoch weights are updated for each Batch
+'''
+
+## Choosing Batch Size ##
+'''
+Smaller batch size obviously requires less memory
+Neural Networks also train faster with smaller batches
+Smaller batches could be less accurate because its more 
+difficult to calculate error gradient
+'''
+
+## Follow-Along ##
+#Imports
+import numpy as np
+import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Dense
+
+# Set the URL
+url = 'https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv'
+
+# Load dataset
+dataset = np.load_test(url, delimiter=',')
+
+# Look at size of dataset
+print("There are {} samples in this dataset".formate(len(dataset)))
+
+# Split into Input(X) and output(y) variables
+# 8 input columns, 1 target
+X = dataset[:, 0:8]
+y = dataset[:, 8]
+
+# Import Keras
+
+# Define Layers
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Compile model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+'''
+outcome:
+There are 768 samples in this dataset
+'''
+
+# Now fit the model with different batch sizes
+
+# Define batch sizes
+size = 1
+
+# Fit the model with different batch sizes
+model.fit(X, y, epochs=100, batch_size=size, verbose=0)
+
+# Evaluate model
+print('Model accuracy for batch size = {}: '.format(size), model.evaluate(X, y)[1]*100)
+
+'''
+outcome:
+24/24 [==============================] - 0s 968us/step - loss: 0.5355 - accuracy: 0.7122
+Model accuracy for batch size = 1:  71.22395634651184
+'''
+
+# Relaease Global Memory state
+tf.keras.backend.clear_session()
+
+# Define the layers
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Compile model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Define batch size
+size = 100
+
+# Fit model with different batch sizes
+model.fit(X, y, epoch=100, batch_size=size, verbose=0)
+
+# Evaluate model
+print('Model accuracy for batch size = {}: '.format(size), model.evaluate(X, y)[1]*100)
+
+'''
+outcome:
+24/24 [==============================] - 0s 913us/step - loss: 0.5435 - accuracy: 0.7344
+Model accuracy for batch size = 100:  73.4375
+'''
+
+# Finally use largest batch size available: lenght of training data
+# Release global memory state
+tf.keras.backend.clear_session()
+
+# Define the layers
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+# Compile the model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+
+# Define batch sizes
+size = len(X)
+
+# Fit the model with different batch sizes
+model.fit(X, y, epochs=100, batch_size=size, verbose=0)
+
+# Evaluate the model
+print('Model accuracy for batch size = {}: '.format(size), model.evaluate(X, y)[1]*100)
+
+'''
+outcome: (the accuracy has decreased because we're using the whole data set as a batch. 
+          In addition, the error in the model is only updated once per epoch, so there 
+          are fewer opportunities for the model to adjust the error and learn a better 
+          fitting model.)
+          
+24/24 [==============================] - 0s 1ms/step - loss: 0.9863 - accuracy: 0.6133
+Model accuracy for batch size = 768:  61.328125
+'''
